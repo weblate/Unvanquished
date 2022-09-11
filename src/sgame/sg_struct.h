@@ -135,8 +135,11 @@ struct GentityRef_impl
 	T entity;
 	unsigned generation;
 
-	GentityRef_impl() = default; // uninitialized!
-	GentityRef_impl(T ent) { *this = ent; }
+	GentityRef_impl() : entity(nullptr), generation(0) {}
+
+	GentityRef_impl(T ent) {
+		*this = ent;
+	}
 
 	GentityRef_impl<T>& operator=(T ent) {
 		entity = ent;
@@ -144,6 +147,19 @@ struct GentityRef_impl
 			generation = ent->generation;
 		}
 		return *this;
+	}
+
+	bool operator==(const GentityRef_impl<T>& other) const {
+		if (!this->entity || !other->entity) {
+			return false;
+		}
+		if (this->entity != other->entity) {
+			return false;
+		}
+		if (this->generation != other->generation) {
+			return false;
+		}
+		return true;
 	}
 
 	operator bool() const {

@@ -1185,7 +1185,11 @@ static void CG_CalculateWeaponPosition( vec3_t out_origin, vec3_t out_angles )
 	if( !filter.IsEmpty( ) )
 	{
 		auto last = filter.Last( );
-		float dt = ( cg.time - last.first ) * 0.001f;
+
+		/* Avoid division-by-zero.
+		It can happen than frametime is smaller than 1ms. */
+		int time = cg.time - last.first;
+		float dt = time ? time * 0.001f : 0.001f;
 
 		offsets.angvel[ 0 ] = AngleNormalize180( angles[ 0 ] - last.second.angles[ 0 ] ) / dt;
 		offsets.angvel[ 1 ] = AngleNormalize180( angles[ 1 ] - last.second.angles[ 1 ] ) / dt;

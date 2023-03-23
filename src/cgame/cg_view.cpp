@@ -1505,6 +1505,12 @@ static void CG_AddReverbEffects( vec3_t loc )
 			continue;
 		}
 
+		if ( !cgs.gameReverbDistances[i] )
+		{
+			// Avoid division-by-zero.
+			continue;
+		}
+
 		dist = CM_DistanceToModel( loc, cgs.gameReverbModels[i] );
 		weight = 1.0f - dist / cgs.gameReverbDistances[i];
 		weight = Math::Clamp( weight, 0.0f, 1.0f ); // Maths::clampFraction( weight )

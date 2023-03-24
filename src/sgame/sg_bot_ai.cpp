@@ -817,12 +817,15 @@ AINodeStatus_t BotActionFight( gentity_t *self, AIGenericNode_t *node )
 		return STATUS_FAILURE;
 	}
 
-	if ( WeaponIsEmpty( BG_GetPlayerWeapon( &self->client->ps ), &self->client->ps ) && myTeam == TEAM_HUMANS )
+	playerState_t const* ps = &self->client->ps;
+	weapon_t primaryWP = static_cast<weapon_t>( ps->weapon );
+	weapon_t equipedWP = BG_GetPlayerWeapon( ps );
+	if ( WeaponIsEmpty( equipedWP, ps ) && myTeam == TEAM_HUMANS )
 	{
 		G_ForceWeaponChange( self, WP_BLASTER );
 	}
 
-	if ( BG_GetPlayerWeapon( &self->client->ps ) == WP_HBUILD )
+	if ( equipedWP == WP_HBUILD )
 	{
 		G_ForceWeaponChange( self, WP_BLASTER );
 	}
@@ -889,7 +892,7 @@ AINodeStatus_t BotActionFight( gentity_t *self, AIGenericNode_t *node )
 
 	if ( mind->botSkill.level >= 3 && goalDist < Square( MAX_HUMAN_DANCE_DIST )
 	        && ( goalDist > Square( MIN_HUMAN_DANCE_DIST ) || mind->botSkill.level < 5 )
-	        && self->client->ps.weapon != WP_PAIN_SAW && self->client->ps.weapon != WP_FLAMER )
+	        && primaryWP != WP_PAIN_SAW && primaryWP != WP_FLAMER )
 	{
 		BotMoveInDir( self, MOVE_BACKWARD );
 	}
@@ -899,7 +902,7 @@ AINodeStatus_t BotActionFight( gentity_t *self, AIGenericNode_t *node )
 		// the result: we go around the enemy
 		BotAlternateStrafe( self );
 	}
-	else if ( goalDist >= Square( MAX_HUMAN_DANCE_DIST ) && self->client->ps.weapon != WP_PAIN_SAW )
+	else if ( goalDist >= Square( MAX_HUMAN_DANCE_DIST ) && primaryWP != WP_PAIN_SAW )
 	{
 		if ( goalDist - Square( MAX_HUMAN_DANCE_DIST ) < 100 )
 		{

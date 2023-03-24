@@ -571,7 +571,7 @@ bool BotCanEvolveToClass( const gentity_t *self, class_t newClass )
 	return cl->canBuyNow();
 }
 
-bool WeaponIsEmpty( weapon_t weapon, playerState_t *ps )
+bool WeaponIsEmpty( weapon_t weapon, playerState_t const *ps )
 {
 	return ps->ammo <= 0 && ps->clips <= 0 && !BG_Weapon( weapon )->infiniteAmmo;
 }

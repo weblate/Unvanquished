@@ -383,7 +383,7 @@ void CG_OffsetThirdPersonView()
 		AnglesToAxis( rotationAngles, axis );
 
 		if ( !( cg.snap->ps.stats[ STAT_STATE ] & SS_WALLCLIMBING ) ||
-		     !BG_RotateAxis( cg.snap->ps.grapplePoint, axis, rotaxis, false,
+		     !BG_RotateAxis( &cg.snap->ps.grapplePoint[0], axis, rotaxis, false,
 		                     cg.snap->ps.eFlags & EF_WALLCLIMBCEILING ) )
 		{
 			AxisCopy( axis, rotaxis );
@@ -517,7 +517,7 @@ void CG_OffsetShoulderView()
 	AnglesToAxis( rotationAngles, axis );
 
 	if ( !( cg.snap->ps.stats[ STAT_STATE ] & SS_WALLCLIMBING ) ||
-	     !BG_RotateAxis( cg.snap->ps.grapplePoint, axis, rotaxis, false,
+	     !BG_RotateAxis( &cg.snap->ps.grapplePoint[0], axis, rotaxis, false,
 	                     cg.snap->ps.eFlags & EF_WALLCLIMBCEILING ) )
 	{
 		AxisCopy( axis, rotaxis );
@@ -1636,10 +1636,10 @@ static int CG_CalcViewValues()
 
 	ps = &cg.predictedPlayerState;
 
-	CG_CalcColorGradingForPoint( ps->origin );
+	CG_CalcColorGradingForPoint( &ps->origin[0] );
 	CG_AddColorGradingEffects( ps );
 
-	CG_AddReverbEffects( ps->origin );
+	CG_AddReverbEffects( &ps->origin[0] );
 
 	// intermission view
 	if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_FREEZE ||
@@ -1667,11 +1667,11 @@ static int CG_CalcViewValues()
 
 	if ( BG_ClassHasAbility( ps->stats[ STAT_CLASS ], SCA_WALLCLIMBER ) )
 	{
-		CG_smoothWWTransitions( ps, ps->viewangles, cg.refdefViewAngles );
+		CG_smoothWWTransitions( ps, &ps->viewangles[0], cg.refdefViewAngles );
 	}
 	else if ( BG_ClassHasAbility( ps->stats[ STAT_CLASS ], SCA_WALLJUMPER ) )
 	{
-		CG_smoothWJTransitions( ps, ps->viewangles, cg.refdefViewAngles );
+		CG_smoothWJTransitions( ps, &ps->viewangles[0], cg.refdefViewAngles );
 	}
 	else
 	{
@@ -1726,7 +1726,7 @@ static int CG_CalcViewValues()
 		CG_OffsetFirstPersonView();
 
 		// Compute motion blur vector
-		speed = VectorNormalize2( cg.snap->ps.velocity, cg.refdef.blurVec );
+		speed = VectorNormalize2( &cg.snap->ps.velocity[0], cg.refdef.blurVec );
 
 		speed = (speed - cg_motionblurMinSpeed.Get());
 		if( speed < 0.0f ) speed = 0.0f;

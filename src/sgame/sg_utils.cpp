@@ -222,7 +222,7 @@ void G_TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, float sp
 	VectorCopy( origin, player->client->ps.origin );
 	player->client->ps.groundEntityNum = ENTITYNUM_NONE;
 
-	AngleVectors( angles, player->client->ps.velocity, nullptr, nullptr );
+	AngleVectors( VEC2GLM( angles ), &player->client->ps.velocity, nullptr, nullptr );
 	VectorScale( player->client->ps.velocity, speed, player->client->ps.velocity );
 	player->client->ps.pm_time = 0.4f * std::abs( speed ); // duration of loss of control
 	if ( player->client->ps.pm_time > 160 )
@@ -939,7 +939,7 @@ Set muzzle location relative to pivoting eye.
 */
 glm::vec3 G_CalcMuzzlePoint( const gentity_t *self, const glm::vec3 &forward )
 {
-	glm::vec3 muzzlePoint = VEC2GLM( self->client->ps.origin );
+	glm::vec3 muzzlePoint = self->client->ps.origin;
 	glm::vec3 normal = BG_GetClientNormal( &self->client->ps );
 	muzzlePoint += static_cast<float>( self->client->ps.viewheight ) * normal;
 	muzzlePoint += 1.0f * forward;

@@ -2606,6 +2606,7 @@ const char *Trans_GenderContext( gender_t gender )
 
 // using the stringizing operator to save typing...
 #define PSF( x ) # x, offsetof( playerState_t, x )
+#define STR( x ) # x
 
 static const NetcodeTable playerStateFields =
 {
@@ -2618,12 +2619,12 @@ static const NetcodeTable playerStateFields =
 	{ PSF( pm_flags          ), 16               , 0 },
 	{ PSF( pm_time           ), -16              , 0 },
 	{ PSF( lowOxygenTime     ), LOW_OXYGEN_TIME_BITS, 0 },
-	{ PSF( origin[ 0 ]       ), 0                , 0 },
-	{ PSF( origin[ 1 ]       ), 0                , 0 },
-	{ PSF( origin[ 2 ]       ), 0                , 0 },
-	{ PSF( velocity[ 0 ]     ), 0                , 0 },
-	{ PSF( velocity[ 1 ]     ), 0                , 0 },
-	{ PSF( velocity[ 2 ]     ), 0                , 0 },
+	{ STR( origin[ 0 ] ), offsetof( playerState_t, origin ) + offsetof( glm::vec3, x ), 0, 0 },
+	{ STR( origin[ 1 ] ), offsetof( playerState_t, origin ) + offsetof( glm::vec3, x ), 1, 1 },
+	{ STR( origin[ 2 ] ), offsetof( playerState_t, origin ) + offsetof( glm::vec3, x ), 2, 2 },
+	{ STR( velocity[ 0 ] ), offsetof( playerState_t, velocity ) + offsetof( glm::vec3, x ), 0, 0 },
+	{ STR( velocity[ 1 ] ), offsetof( playerState_t, velocity ) + offsetof( glm::vec3, x ), 1, 1 },
+	{ STR( velocity[ 2 ] ), offsetof( playerState_t, velocity ) + offsetof( glm::vec3, x ), 2, 2 },
 	{ PSF( weaponCharge      ), -15              , 0 },
 	{ PSF( weaponTime        ), -16              , 0 },
 	{ PSF( gravity           ), 16               , 0 },
@@ -2650,9 +2651,9 @@ static const NetcodeTable playerStateFields =
 	{ PSF( clientNum         ), 8                , 0 },
 	{ PSF( weapon            ), 7                , 0 },
 	{ PSF( weaponstate       ), 4                , 0 },
-	{ PSF( viewangles[ 0 ]   ), 0                , 0 },
-	{ PSF( viewangles[ 1 ]   ), 0                , 0 },
-	{ PSF( viewangles[ 2 ]   ), 0                , 0 },
+	{ STR( viewangles[ 0 ] ), offsetof( playerState_t, viewangles ) + offsetof( glm::vec3, x ), 0, 0 },
+	{ STR( viewangles[ 1 ] ), offsetof( playerState_t, viewangles ) + offsetof( glm::vec3, x ), 1, 1 },
+	{ STR( viewangles[ 2 ] ), offsetof( playerState_t, viewangles ) + offsetof( glm::vec3, x ), 2, 2 },
 	{ PSF( viewheight        ), -8               , 0 },
 	{ PSF( damageEvent       ), 8                , 0 },
 	{ PSF( damageYaw         ), 8                , 0 },
@@ -2660,9 +2661,9 @@ static const NetcodeTable playerStateFields =
 	{ PSF( damageCount       ), 8                , 0 },
 	{ PSF( generic1          ), 10               , 0 },
 	{ PSF( loopSound         ), 16               , 0 },
-	{ PSF( grapplePoint[ 0 ] ), 0                , 0 },
-	{ PSF( grapplePoint[ 1 ] ), 0                , 0 },
-	{ PSF( grapplePoint[ 2 ] ), 0                , 0 },
+	{ STR( grapplePoint[ 0 ] ), offsetof( playerState_t, grapplePoint ) + offsetof( glm::vec3, x ), 0, 0 },
+	{ STR( grapplePoint[ 1 ] ), offsetof( playerState_t, grapplePoint ) + offsetof( glm::vec3, x ), 1, 1 },
+	{ STR( grapplePoint[ 2 ] ), offsetof( playerState_t, grapplePoint ) + offsetof( glm::vec3, x ), 2, 2 },
 	{ PSF( ammo              ), 12               , 0 },
 	{ PSF( clips             ), 4                , 0 },
 	{ PSF( tauntTimer        ), 12               , 0 },
@@ -2692,14 +2693,14 @@ glm::vec3 BG_GetClientNormal( const playerState_t *ps )
 		{
 			return glm::vec3( 0, 0, -1 );
 		}
-		return VEC2GLM( ps->grapplePoint );
+		return ps->grapplePoint;
 	}
 	return glm::vec3( 0, 0, 1 );
 }
 
 glm::vec3 BG_GetClientViewOrigin( const playerState_t *ps )
 {
-	return VEC2GLM( ps->origin ) + static_cast<float>( ps->viewheight ) * BG_GetClientNormal( ps );
+	return ps->origin + static_cast<float>( ps->viewheight ) * BG_GetClientNormal( ps );
 }
 
 void BG_BoundingBox( class_t pClass,

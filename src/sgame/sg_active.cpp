@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "CBSE.h"
 #include "sg_cm_world.h"
 
+#include <glm/gtx/norm.hpp>
 bool ClientInactivityTimer( gentity_t *ent, bool active );
 
 static Cvar::Cvar<float> g_devolveReturnRate(
@@ -326,7 +327,7 @@ static void PushBot(gentity_t * ent, gentity_t * other)
 	vec3_t dir, ang, f, r;
 	float oldspeed;
 
-	oldspeed = VectorLength(other->client->ps.velocity);
+	oldspeed = glm::length( other->client->ps.velocity );
 	if(oldspeed < 200)
 	{
 		oldspeed = 200;
@@ -343,10 +344,9 @@ static void PushBot(gentity_t * ent, gentity_t * other)
 	VectorMA(other->client->ps.velocity, 100 * ((level.time + (ent->s.number * 1000)) % 4000 < 2000 ? 1.0 : -1.0), r,
 	other->client->ps.velocity);
 
-	if(VectorLengthSquared(other->client->ps.velocity) > oldspeed * oldspeed)
+	if ( glm::length2( other->client->ps.velocity ) > oldspeed * oldspeed )
 	{
-		VectorNormalize(other->client->ps.velocity);
-		VectorScale(other->client->ps.velocity, oldspeed, other->client->ps.velocity);
+		other->client->ps.velocity = glm::normalize( other->client->ps.velocity ) * oldspeed;
 	}
 }
 /*
@@ -829,18 +829,18 @@ static void BeaconAutoTag( gentity_t *self, int timePassed )
 	gentity_t *traceEnt, *target;
 	gclient_t *client;
 	team_t    team;
-	vec3_t viewOrigin, forward, end;
+	glm::vec3 viewOrigin, forward, end;
 
 	if ( !( client = self->client ) ) return;
 
 	team = (team_t)client->pers.team;
 
-	BG_GetClientViewOrigin( &self->client->ps, viewOrigin );
-	AngleVectors( self->client->ps.viewangles, forward, nullptr, nullptr );
-	VectorMA( viewOrigin, 65536, forward, end );
+	viewOrigin = BG_GetClientViewOrigin( &self->client->ps );
+	AngleVectors( self->client->ps.viewangles, &forward, nullptr, nullptr );
+	end = viewOrigin + 65536.f * forward;
 
-	G_UnlaggedOn( self, viewOrigin, 65536 );
-	traceEnt = Beacon::TagTrace( viewOrigin, end, self->s.number, MASK_SHOT, team, true );
+	G_UnlaggedOn( self, &viewOrigin[0], 65536 );
+	traceEnt = Beacon::TagTrace( &viewOrigin[0], &end[0], self->s.number, MASK_SHOT, team, true );
 	G_UnlaggedOff( );
 
 	for ( target = nullptr; ( target = G_IterateEntities( target ) ); )
@@ -925,17 +925,18 @@ static void ClientTimerActions( gentity_t *ent, int msec )
 				// Set validity bit on buildable
 				if ( buildable > BA_NONE )
 				{
-					vec3_t forward, aimDir, normal;
+					vec3_t forward, normal;
+					glm::vec3 aimDir;
 					vec3_t dummy, dummy2;
 					int dummy3;
 					int dist;
 
 					BG_GetClientNormal( &client->ps,normal );
-					AngleVectors( client->ps.viewangles, aimDir, nullptr, nullptr );
-					ProjectPointOnPlane( forward, aimDir, normal );
+					AngleVectors( client->ps.viewangles, &aimDir, nullptr, nullptr );
+					ProjectPointOnPlane( forward, &aimDir[0], normal );
 					VectorNormalize( forward );
 
-					dist = BG_Class( ent->client->ps.stats[ STAT_CLASS ] )->buildDist * DotProduct( forward, aimDir );
+					dist = BG_Class( ent->client->ps.stats[ STAT_CLASS ] )->buildDist * DotProduct( forward, &aimDir[0] );
 
 					client->ps.stats[ STAT_BUILDABLE ] &= ~SB_BUILDABLE_STATE_MASK;
 					client->ps.stats[ STAT_BUILDABLE ] |= SB_BUILDABLE_FROM_IBE( G_CanBuild( ent, buildable, dist, dummy, dummy2, &dummy3 ) );
@@ -1236,7 +1237,7 @@ static void SendPendingPredictableEvents( playerState_t *ps )
 		extEvent = ps->externalEvent;
 		ps->externalEvent = 0;
 		// create temporary entity for event
-		t = G_NewTempEntity( VEC2GLM( ps->origin ), event );
+		t = G_NewTempEntity( ps->origin, event );
 		number = t->s.number;
 		BG_PlayerStateToEntityState( ps, &t->s, true );
 		t->s.number = number;
@@ -1600,12 +1601,12 @@ static void G_UnlaggedDetectCollisions( gentity_t *ent )
 	calc = &ent->client->unlaggedCalc;
 
 	// if the client isn't moving, this is not necessary
-	if ( VectorCompare( ent->client->oldOrigin, ent->client->ps.origin ) )
+	if ( glm::all( glm::equal( VEC2GLM( ent->client->oldOrigin ), ent->client->ps.origin ) ) )
 	{
 		return;
 	}
 
-	range = Distance( ent->client->oldOrigin, ent->client->ps.origin );
+	range = glm::distance( VEC2GLM( ent->client->oldOrigin ), ent->client->ps.origin );
 
 	// increase the range by the player's largest possible radius since it's
 	// the players bounding box that collides, not their origin
@@ -1616,7 +1617,7 @@ static void G_UnlaggedDetectCollisions( gentity_t *ent )
 	G_UnlaggedOn( ent, ent->client->oldOrigin, range );
 
 	trap_Trace( &tr, ent->client->oldOrigin, ent->r.mins, ent->r.maxs,
-	            ent->client->ps.origin, ent->s.number, MASK_PLAYERSOLID, 0 );
+	            &ent->client->ps.origin[0], ent->s.number, MASK_PLAYERSOLID, 0 );
 
 	if ( tr.entityNum >= 0 && tr.entityNum < MAX_CLIENTS )
 	{
@@ -2177,13 +2178,13 @@ static void ClientThink_real( gentity_t *self )
 	     Entities::IsAlive( self ) )
 	{
 		trace_t   trace;
-		vec3_t    view, point;
+		glm::vec3 view, point;
 		gentity_t *ent;
 
 		// look for object infront of player
-		AngleVectors( client->ps.viewangles, view, nullptr, nullptr );
-		VectorMA( client->ps.origin, ENTITY_USE_RANGE, view, point );
-		trap_Trace( &trace, client->ps.origin, nullptr, nullptr, point, self->s.number, MASK_SHOT, 0 );
+		AngleVectors( client->ps.viewangles, &view, nullptr, nullptr );
+		point = client->ps.origin + ENTITY_USE_RANGE * view;
+		trap_Trace( &trace, &client->ps.origin[0], nullptr, nullptr, &point[0], self->s.number, MASK_SHOT, 0 );
 
 		ent = &g_entities[ trace.entityNum ];
 
@@ -2202,7 +2203,7 @@ static void ClientThink_real( gentity_t *self )
 		else
 		{
 			// no entity in front of player - do a small area search
-			for ( ent = nullptr; ( ent = G_IterateEntitiesWithinRadius( ent, VEC2GLM( client->ps.origin ), ENTITY_USE_RANGE ) ); )
+			for ( ent = nullptr; ( ent = G_IterateEntitiesWithinRadius( ent, client->ps.origin, ENTITY_USE_RANGE ) ); )
 			{
 				if ( ent && ent->use && ent->buildableTeam == client->pers.team)
 				{

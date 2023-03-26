@@ -431,7 +431,7 @@ static void SendMeleeHitEvent( gentity_t *attacker, gentity_t *target, trace_t *
 	}
 
 	//tyrant charge attack do not have traces... there must be a better way for that...
-	VectorSubtract( tr ? tr->endpos : attacker->client->ps.origin, target->s.origin, normal );
+	VectorSubtract( ( tr ? tr->endpos : &attacker->client->ps.origin[0] ), target->s.origin, normal );
 
 	// Normalize the horizontal components of the vector difference to the "radius" of the bounding box
 	float mag = sqrtf( normal[ 0 ] * normal[ 0 ] + normal[ 1 ] * normal[ 1 ] );
@@ -890,7 +890,6 @@ BUILD GUN
 
 void G_CheckCkitRepair( gentity_t *self )
 {
-	vec3_t    viewOrigin, forward, end;
 	trace_t   tr;
 	gentity_t *traceEnt;
 
@@ -900,11 +899,12 @@ void G_CheckCkitRepair( gentity_t *self )
 		return;
 	}
 
-	BG_GetClientViewOrigin( &self->client->ps, viewOrigin );
-	AngleVectors( self->client->ps.viewangles, forward, nullptr, nullptr );
-	VectorMA( viewOrigin, 100, forward, end );
+	glm::vec3 forward;
+	glm::vec3 viewOrigin = BG_GetClientViewOrigin( &self->client->ps );
+	AngleVectors( self->client->ps.viewangles, &forward, nullptr, nullptr );
+	glm::vec3 end = viewOrigin + 100.f * forward;
 
-	trap_Trace( &tr, viewOrigin, nullptr, nullptr, end, self->s.number, MASK_PLAYERSOLID, 0 );
+	trap_Trace( &tr, &viewOrigin[0], nullptr, nullptr, &end[0], self->s.number, MASK_PLAYERSOLID, 0 );
 	traceEnt = &g_entities[ tr.entityNum ];
 
 	if ( tr.fraction < 1.0f && traceEnt->spawned && traceEnt->s.eType == entityType_t::ET_BUILDABLE &&
@@ -1076,7 +1076,7 @@ bool G_CheckDretchAttack( gentity_t *self )
 	}
 
 	// Calculate muzzle point
-	AngleVectors( self->client->ps.viewangles, forward, right, up );
+	AngleVectors( &self->client->ps.viewangles[0], forward, right, up );
 	G_CalcMuzzlePoint( self, forward, right, up, muzzle );
 
 	G_WideTrace( &tr, self, LEVEL0_BITE_RANGE, LEVEL0_BITE_WIDTH, LEVEL0_BITE_WIDTH, &traceEnt );
@@ -1351,7 +1351,7 @@ bool G_CheckPounceAttack( gentity_t *self )
 	}
 
 	// Calculate muzzle point
-	AngleVectors( self->client->ps.viewangles, forward, right, up );
+	AngleVectors( &self->client->ps.viewangles[0], forward, right, up );
 	G_CalcMuzzlePoint( self, forward, right, up, muzzle );
 
 	// Trace from muzzle to see what we hit
@@ -1573,12 +1573,12 @@ void G_FireWeapon( gentity_t *self, weapon_t weapon, weaponMode_t weaponMode )
 	// calculate muzzle
 	if ( self->client )
 	{
-		AngleVectors( self->client->ps.viewangles, forward, right, up );
+		AngleVectors( &self->client->ps.viewangles[0], forward, right, up );
 		G_CalcMuzzlePoint( self, forward, right, up, muzzle );
 	}
 	else
 	{
-		AngleVectors( self->buildableAim, forward, right, up );
+		AngleVectors( &self->buildableAim[0], forward, right, up );
 		VectorCopy( self->s.pos.trBase, muzzle );
 	}
 
@@ -1802,7 +1802,7 @@ void G_FireUpgrade( gentity_t *self, upgrade_t upgrade )
 		return;
 	}
 
-	AngleVectors( self->client->ps.viewangles, forward, right, up );
+	AngleVectors( &self->client->ps.viewangles[0], forward, right, up );
 	G_CalcMuzzlePoint( self, forward, right, up, muzzle );
 
 	switch ( upgrade )

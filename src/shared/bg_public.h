@@ -65,13 +65,13 @@ DEPRECATED inline glm::vec3 VEC2GLM( glm::vec3 v ) {
 struct playerState_t
 {
 	// the first group of fields must be identical to the ones in OpaquePlayerState
-	vec3_t origin;
+	glm::vec3 origin;
 	int ping; // server to game info for scoreboard
 	int persistant[16];
 	int    viewheight;
 	int clientNum; // ranges from 0 to MAX_CLIENTS-1
 	int   delta_angles[ 3 ]; // add to command angles to get view direction
-	vec3_t viewangles; // for fixed views
+	glm::vec3 viewangles; // for fixed views
 	int    commandTime; // cmd->serverTime of last executed command
 	// end of fields which must be identical to OpaquePlayerState
 
@@ -82,7 +82,7 @@ struct playerState_t
 
 	int    lowOxygenTime; // time at which we will be suffocating and taking drowning damage
 
-	vec3_t velocity;
+	glm::vec3 velocity;
 	int    weaponTime;
 	int    gravity;
 
@@ -139,7 +139,7 @@ struct playerState_t
 
 	int           generic1;
 	int           loopSound;
-	vec3_t        grapplePoint; // location of grapple to pull towards if PMF_GRAPPLE_PULL
+	glm::vec3 grapplePoint; // location of grapple to pull towards if PMF_GRAPPLE_PULL
 	int           weaponAnim; // mask off ANIM_TOGGLEBIT
 	int           ammo;
 	int           clips; // clips held

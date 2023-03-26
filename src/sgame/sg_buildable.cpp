@@ -905,11 +905,11 @@ void G_BuildableTouchTriggers( gentity_t *ent )
 /**
  * @return Whether origin is within a distance of radius of a buildable of the given type.
  */
-bool G_BuildableInRange( vec3_t origin, float radius, buildable_t buildable )
+bool G_BuildableInRange( glm::vec3 const& origin, float radius, buildable_t buildable )
 {
 	gentity_t *neighbor = nullptr;
 
-	while ( ( neighbor = G_IterateEntitiesWithinRadius( neighbor, VEC2GLM( origin ), radius ) ) )
+	while ( ( neighbor = G_IterateEntitiesWithinRadius( neighbor, origin, radius ) ) )
 	{
 		if ( neighbor->s.eType != entityType_t::ET_BUILDABLE || !neighbor->spawned || Entities::IsDead( neighbor ) ||
 		     ( neighbor->buildableTeam == TEAM_HUMANS && !neighbor->powered ) )
@@ -1071,7 +1071,7 @@ static int CompareBuildablesForRemoval( const void *a, const void *b )
 
 gentity_t *G_GetDeconstructibleBuildable( gentity_t *ent )
 {
-	vec3_t viewOrigin, forward, end;
+	glm::vec3 viewOrigin, forward, end;
 	trace_t trace;
 	gentity_t *buildable;
 
@@ -1083,10 +1083,10 @@ gentity_t *G_GetDeconstructibleBuildable( gentity_t *ent )
 	}
 
 	// Trace for target.
-	BG_GetClientViewOrigin( &ent->client->ps, viewOrigin );
-	AngleVectors( ent->client->ps.viewangles, forward, nullptr, nullptr );
-	VectorMA( viewOrigin, BUILDER_DECONSTRUCT_RANGE, forward, end );
-	trap_Trace( &trace, viewOrigin, nullptr, nullptr, end, ent->num(), MASK_PLAYERSOLID, 0 );
+	viewOrigin = BG_GetClientViewOrigin( &ent->client->ps );
+	AngleVectors( ent->client->ps.viewangles, &forward, nullptr, nullptr );
+	end = viewOrigin + BUILDER_DECONSTRUCT_RANGE * forward;
+	trap_Trace( &trace, &viewOrigin[0], nullptr, nullptr, &end[0], ent->num(), MASK_PLAYERSOLID, 0 );
 	buildable = &g_entities[ trace.entityNum ];
 
 	// Check if target is valid.
@@ -1559,7 +1559,7 @@ itemBuildError_t G_CanBuild( gentity_t *ent, buildable_t buildable, int /*distan
 
 	BG_PositionBuildableRelativeToPlayer( ps, mins, maxs, trap_Trace, entity_origin, angles, &tr1 );
 	trap_Trace( &tr2, entity_origin, mins, maxs, entity_origin, ENTITYNUM_NONE, MASK_PLAYERSOLID, 0 );
-	trap_Trace( &tr3, ps->origin, nullptr, nullptr, entity_origin, ent->num(), MASK_PLAYERSOLID, 0 );
+	trap_Trace( &tr3, &ps->origin[0], nullptr, nullptr, entity_origin, ent->num(), MASK_PLAYERSOLID, 0 );
 
 	VectorCopy( entity_origin, origin );
 	*groundEntNum = tr1.entityNum;
@@ -2073,13 +2073,13 @@ bool G_BuildIfValid( gentity_t *ent, buildable_t buildable )
 	float  dist;
 	vec3_t origin, normal;
 	int    groundEntNum;
-	vec3_t forward, aimDir;
+	glm::vec3 forward, aimDir;
 
 	BG_GetClientNormal( &ent->client->ps, normal);
-	AngleVectors( ent->client->ps.viewangles, aimDir, nullptr, nullptr );
-	ProjectPointOnPlane( forward, aimDir, normal );
-	VectorNormalize( forward );
-	dist = BG_Class( ent->client->ps.stats[ STAT_CLASS ] )->buildDist * DotProduct( forward, aimDir );
+	AngleVectors( ent->client->ps.viewangles, &aimDir, nullptr, nullptr );
+	ProjectPointOnPlane( &forward[0], &aimDir[0], normal );
+	forward = glm::normalize( forward );
+	dist = BG_Class( ent->client->ps.stats[ STAT_CLASS ] )->buildDist * glm::dot( forward, aimDir );
 
 	switch ( G_CanBuild( ent, buildable, dist, origin, normal, &groundEntNum ) )
 	{

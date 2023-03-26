@@ -2595,8 +2595,8 @@ bool G_AlienEvolve( gentity_t *ent, class_t newClass, bool report, bool dryRun )
 
 	// check there are no humans nearby
 	glm::vec3 range = { AS_OVER_RT3, AS_OVER_RT3, AS_OVER_RT3 };
-	glm::vec3 maxs = VEC2GLM( ent->client->ps.origin ) + range;
-	glm::vec3 mins = VEC2GLM( ent->client->ps.origin ) - range;
+	glm::vec3 maxs = ent->client->ps.origin + range;
+	glm::vec3 mins = ent->client->ps.origin - range;
 
 	int entityList[ MAX_GENTITIES ];
 	int num = trap_EntitiesInBox( &mins[0], &maxs[0], entityList, MAX_GENTITIES );
@@ -2901,13 +2901,13 @@ Cmd_Ignite_f
 */
 static void Cmd_Ignite_f( gentity_t *player )
 {
-	vec3_t    viewOrigin, forward, end;
+	glm::vec3 viewOrigin, forward, end;
 	trace_t   trace;
 
-	BG_GetClientViewOrigin( &player->client->ps, viewOrigin );
-	AngleVectors( player->client->ps.viewangles, forward, nullptr, nullptr );
-	VectorMA( viewOrigin, 1000, forward, end );
-	trap_Trace( &trace, viewOrigin, nullptr, nullptr, end, player->num(), MASK_PLAYERSOLID, 0 );
+	viewOrigin = BG_GetClientViewOrigin( &player->client->ps );
+	AngleVectors( player->client->ps.viewangles, &forward, nullptr, nullptr );
+	end = viewOrigin + forward * 1000.f;
+	trap_Trace( &trace, &viewOrigin[0], nullptr, nullptr, &end[0], player->num(), MASK_PLAYERSOLID, 0 );
 
 	if ( trace.entityNum == ENTITYNUM_WORLD ) {
 		G_SpawnFire( trace.endpos, trace.plane.normal, player );
@@ -3602,15 +3602,15 @@ static void Cmd_Build_f( gentity_t *ent )
 	     !BG_BuildableDisabled( buildable ) && BG_BuildableUnlocked( buildable ) )
 	{
 		dynMenu_t err;
-		vec3_t forward, aimDir;
+		glm::vec3 forward, aimDir;
 		itemBuildError_t reason;
 
 		BG_GetClientNormal( &ent->client->ps, normal );
-		AngleVectors( ent->client->ps.viewangles, aimDir, nullptr, nullptr );
-		ProjectPointOnPlane( forward, aimDir, normal);
-		VectorNormalize( forward );
+		AngleVectors( ent->client->ps.viewangles, &aimDir, nullptr, nullptr );
+		ProjectPointOnPlane( &forward[0], &aimDir[0], normal);
+		forward = glm::normalize( forward );
 
-		dist = BG_Class( ent->client->ps.stats[ STAT_CLASS ] )->buildDist * DotProduct( forward, aimDir );
+		dist = BG_Class( ent->client->ps.stats[ STAT_CLASS ] )->buildDist * glm::dot( forward, aimDir );
 
 		reason = G_CanBuild( ent, buildable, dist, origin, normal, &groundEntNum );
 		ent->client->ps.stats[ STAT_BUILDABLE ] = BA_NONE | SB_BUILDABLE_FROM_IBE( reason );
@@ -4700,7 +4700,7 @@ static void Cmd_Beacon_f( gentity_t *ent )
 	beaconType_t type;
 	team_t       team;
 	int          flags;
-	vec3_t       origin, end, forward;
+	glm::vec3 origin, end, forward;
 	trace_t      tr;
 	const beaconAttributes_t *battr;
 
@@ -4731,13 +4731,13 @@ static void Cmd_Beacon_f( gentity_t *ent )
 	team  = (team_t)ent->client->pers.team;
 
 	// Trace in view direction.
-	BG_GetClientViewOrigin( &ent->client->ps, origin );
-	AngleVectors( ent->client->ps.viewangles, forward, nullptr, nullptr );
-	VectorMA( origin, 65536, forward, end );
+	origin = BG_GetClientViewOrigin( &ent->client->ps );
+	AngleVectors( ent->client->ps.viewangles, &forward, nullptr, nullptr );
+	end = origin + 65536.f * forward;
 
-	G_UnlaggedOn( ent, origin, 65536 );
-	trap_Trace( &tr, origin, nullptr, nullptr, end, ent->num(), MASK_PLAYERSOLID, 0 );
-	G_UnlaggedOff( );
+	G_UnlaggedOn( ent, &origin[0], 65536 );
+	trap_Trace( &tr, &origin[0], nullptr, nullptr, &end[0], ent->num(), MASK_PLAYERSOLID, 0 );
+	G_UnlaggedOff();
 
 	// Evaluate flood limit.
 	if( G_FloodLimited( ent ) )

@@ -855,7 +855,7 @@ static bool PM_CheckPounce()
 
 					glm::vec3 traceTarget = pm->ps->origin + 10000.0f * VEC2GLM( pml.forward );
 
-					pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, &traceTarget[0],
+					pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], &traceTarget[0],
 					           pm->ps->clientNum, MASK_SOLID, 0 );
 
 					foundTrajectory = ( trace.fraction < 1.0f );
@@ -1112,7 +1112,7 @@ static bool PM_CheckWallJump()
 
 	//trace into direction we are moving
 	VectorMA( pm->ps->origin, 0.25f, movedir, point );
-	pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+	pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 	           pm->tracemask, 0 );
 
 	if ( !hitGrippingSurface( trace ) || trace.plane.normal[ 2 ] >= MIN_WALK_NORMAL )
@@ -1242,7 +1242,7 @@ static bool PM_CheckWallRun()
 	}
 	vec3_t trace_end;
 	VectorMA( pm->ps->origin, 0.25f, dir, trace_end );
-	pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, trace_end, pm->ps->clientNum, pm->tracemask, 0);
+	pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], trace_end, pm->ps->clientNum, pm->tracemask, 0);
 
 	if ( !hitGrippingSurface( trace ) || trace.plane.normal[ 2 ] >= MIN_WALK_NORMAL )
 	{
@@ -2109,7 +2109,7 @@ static void PM_CheckLadder()
 	forward[ 2 ] = 0.0f;
 
 	glm::vec3 end = pm->ps->origin + forward;
-	pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, &end[0], pm->ps->clientNum,
+	pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], &end[0], pm->ps->clientNum,
 	           MASK_PLAYERSOLID, 0 );
 
 	pml.ladder = ( trace.fraction < 1.0f ) && ( trace.surfaceFlags & SURF_LADDER );
@@ -2314,7 +2314,7 @@ static int PM_CorrectAllSolid( trace_t *trace )
 				point[ 0 ] += ( float ) i;
 				point[ 1 ] += ( float ) j;
 				point[ 2 ] += ( float ) k;
-				pm->trace( trace, point, pm->mins, pm->maxs, point, pm->ps->clientNum,
+				pm->trace( trace, point, &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 				           pm->tracemask, 0 );
 
 				if ( !trace->allsolid )
@@ -2323,7 +2323,7 @@ static int PM_CorrectAllSolid( trace_t *trace )
 					point[ 1 ] = pm->ps->origin[ 1 ];
 					point[ 2 ] = pm->ps->origin[ 2 ] - 0.25;
 
-					pm->trace( trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+					pm->trace( trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 					           pm->tracemask, 0 );
 					pml.groundTrace = *trace;
 					return true;
@@ -2465,7 +2465,7 @@ static void PM_GroundClimbTrace()
 
 				// trace into direction we are moving
 				VectorMA( pm->ps->origin, 0.25f, moveDir, point );
-				pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+				pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 				           pm->tracemask, 0 );
 
 				break;
@@ -2475,7 +2475,7 @@ static void PM_GroundClimbTrace()
 				// mask out CONTENTS_BODY to not hit other players and avoid the camera flipping out
 				// when wallwalkers touch
 				VectorMA( pm->ps->origin, -0.25f, surfNormal, point );
-				pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+				pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 				           pm->tracemask, CONTENTS_BODY );
 
 				break;
@@ -2485,7 +2485,7 @@ static void PM_GroundClimbTrace()
 				{
 					// step down
 					VectorMA( pm->ps->origin, -STEPSIZE, surfNormal, point );
-					pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+					pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 					           pm->tracemask, 0 );
 				}
 				else
@@ -2501,7 +2501,7 @@ static void PM_GroundClimbTrace()
 				{
 					VectorMA( pm->ps->origin, -16.0f, surfNormal, point );
 					VectorMA( point, -16.0f, moveDir, point );
-					pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+					pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 					           pm->tracemask, 0 );
 				}
 				else
@@ -2516,7 +2516,7 @@ static void PM_GroundClimbTrace()
 				if ( velocityDir[ 2 ] > 0.2f ) // acosf( 0.2f ) ~= 80°
 				{
 					VectorMA( pm->ps->origin, -16.0f, ceilingNormal, point );
-					pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+					pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 					           pm->tracemask, CONTENTS_BODY );
 					break;
 				}
@@ -2529,7 +2529,7 @@ static void PM_GroundClimbTrace()
 				// fall back so we don't have to modify PM_GroundTrace too much
 				VectorCopy( pm->ps->origin, point );
 				point[ 2 ] = pm->ps->origin[ 2 ] - 0.25f;
-				pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+				pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 				           pm->tracemask, 0 );
 
 				break;
@@ -2895,7 +2895,7 @@ static void PM_GroundTrace()
 	point[ 1 ] = pm->ps->origin[ 1 ];
 	point[ 2 ] = pm->ps->origin[ 2 ] - 0.25f;
 
-	pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+	pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 	           pm->tracemask, 0 );
 
 	pml.groundTrace = trace;
@@ -2921,7 +2921,7 @@ static void PM_GroundTrace()
 			point[ 0 ] = pm->ps->origin[ 0 ];
 			point[ 1 ] = pm->ps->origin[ 1 ];
 			point[ 2 ] = pm->ps->origin[ 2 ] - STEPSIZE;
-			pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, point, pm->ps->clientNum,
+			pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], point, pm->ps->clientNum,
 			           pm->tracemask, 0 );
 
 			//if we hit something
@@ -3096,7 +3096,7 @@ static void PM_CheckDuck()
 	vec3_t  PCmaxs, PCcmaxs;
 	playerState_t *ps = pm->ps;
 
-	BG_ClassBoundingBox( ps->stats[ STAT_CLASS ], pm->mins, PCmaxs, PCcmaxs, nullptr, nullptr );
+	BG_ClassBoundingBox( ps->stats[ STAT_CLASS ], &pm->mins[0], PCmaxs, PCcmaxs, nullptr, nullptr );
 
 	pm->maxs[ 0 ] = PCmaxs[ 0 ];
 	pm->maxs[ 1 ] = PCmaxs[ 1 ];
@@ -3121,7 +3121,7 @@ static void PM_CheckDuck()
 		{
 			// try to stand up
 			pm->maxs[ 2 ] = PCmaxs[ 2 ];
-			pm->trace( &trace, &ps->origin[0], pm->mins, pm->maxs, &ps->origin[0],
+			pm->trace( &trace, &ps->origin[0], &pm->mins[0], &pm->maxs[0], &ps->origin[0],
 			           ps->clientNum, pm->tracemask, 0 );
 
 			if ( !trace.allsolid )
@@ -4819,7 +4819,7 @@ static bool  PM_SlideMove( bool gravity )
 
 		// see if we can make it there
 		// spectators ignore movers, so that they can noclip through doors
-		pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, end, pm->ps->clientNum,
+		pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], end, pm->ps->clientNum,
 		           pm->tracemask, ( pm->ps->pm_type == PM_SPECTATOR ) ? CONTENTS_MOVER : 0 );
 
 		if ( trace.allsolid )
@@ -4996,7 +4996,7 @@ static bool PM_StepSlideMove( bool gravity, bool predictive )
 	VectorCopy( pm->ps->velocity, start_v );
 
 	VectorMA( start_o, -STEPSIZE, normal, down );
-	pm->trace( &trace, start_o, pm->mins, pm->maxs, down, pm->ps->clientNum, pm->tracemask, 0 );
+	pm->trace( &trace, start_o, &pm->mins[0], &pm->maxs[0], down, pm->ps->clientNum, pm->tracemask, 0 );
 
 	if ( !PM_SlideMove( gravity ) )
 	{
@@ -5033,7 +5033,7 @@ static bool PM_StepSlideMove( bool gravity, bool predictive )
 		VectorMA( start_o, STEPSIZE, normal, up );
 
 		// test the player position if they were a stepheight higher
-		pm->trace( &trace, start_o, pm->mins, pm->maxs, up, pm->ps->clientNum, pm->tracemask, 0 );
+		pm->trace( &trace, start_o, &pm->mins[0], &pm->maxs[0], up, pm->ps->clientNum, pm->tracemask, 0 );
 
 		if ( trace.allsolid )
 		{
@@ -5066,7 +5066,7 @@ static bool PM_StepSlideMove( bool gravity, bool predictive )
 
 		// push down the final amount
 		VectorMA( pm->ps->origin, -stepSize, normal, down );
-		pm->trace( &trace, &pm->ps->origin[0], pm->mins, pm->maxs, down, pm->ps->clientNum,
+		pm->trace( &trace, &pm->ps->origin[0], &pm->mins[0], &pm->maxs[0], down, pm->ps->clientNum,
 		           pm->tracemask, 0 );
 
 		if ( !trace.allsolid )

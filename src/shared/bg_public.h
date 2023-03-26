@@ -285,7 +285,7 @@ enum weaponstate_t
 struct pmoveExt_t
 {
 	int    pouncePayload;
-	vec3_t fallImpactVelocity;
+	glm::vec3 fallImpactVelocity;
 	bool cancelDeconstructCharge;
 };
 
@@ -324,7 +324,6 @@ struct pmove_t
 
 	// callbacks to test the world
 	// these will be different functions during game and cgame
-	/*void    (*trace)( trace_t *results, const vec3_t start, vec3_t mins, vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask );*/
 	void ( *trace )( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs,
 	                 const vec3_t end, int passEntityNum, int contentMask, int skipmask );
 
@@ -1294,15 +1293,15 @@ struct classModelConfig_t
 	char   hudName[ MAX_QPATH ];
 	char   *humanName;
 
-	vec3_t mins;
-	vec3_t maxs;
-	vec3_t crouchMaxs;
-	vec3_t deadMins;
-	vec3_t deadMaxs;
+	glm::vec3 mins;
+	glm::vec3 maxs;
+	glm::vec3 crouchMaxs;
+	glm::vec3 deadMins;
+	glm::vec3 deadMaxs;
 	int    viewheight;
 	int    crouchViewheight;
 	float  zOffset;
-	vec3_t shoulderOffsets;
+	glm::vec3 shoulderOffsets;
 	bool segmented;
 
 	class_t navMeshClass; // if not PCL_NONE, which model's navmesh to use
@@ -1358,9 +1357,9 @@ struct buildableModelConfig_t
 	char   models[ MAX_BUILDABLE_MODELS ][ MAX_QPATH ];
 
 	float  modelScale;
-	vec3_t modelRotation;
-	vec3_t mins;
-	vec3_t maxs;
+	glm::vec3 modelRotation;
+	glm::vec3 mins;
+	glm::vec3 maxs;
 	float  zOffset;
 	float  oldScale;
 	float  oldOffset;
@@ -1448,13 +1447,13 @@ struct missileAttributes_t
 	// display
 	qhandle_t      model;
 	float          modelScale;
-	vec3_t         modelRotation;
+	glm::vec3         modelRotation;
 
 	sfxHandle_t    sound;
 	bool       usesDlight;
 	float          dlight;
 	float          dlightIntensity;
-	vec3_t         dlightColor;
+	glm::vec3         dlightColor;
 	int            renderfx;
 	bool       usesSprite;
 	qhandle_t      sprite;

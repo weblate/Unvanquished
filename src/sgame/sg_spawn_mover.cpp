@@ -1666,7 +1666,7 @@ void SP_func_door( gentity_t *self )
 	trap_SetBrushModel( self, self->model );
 
 	glm::vec3 angles = VEC2GLM( self->s.angles );
-	glm::vec3 movedir = VEC2GLM( self->movedir );
+	glm::vec3 movedir = self->movedir;
 	G_SetMovedir( angles, movedir );
 	VectorCopy( &angles[0], self->s.angles );
 	VectorCopy( &movedir[0], self->movedir );
@@ -2192,7 +2192,7 @@ void SP_func_button( gentity_t *self )
 	G_SpawnFloat( "lip", "4", &lip );
 
 	glm::vec3 angles = VEC2GLM( self->s.angles );
-	glm::vec3 movedir = VEC2GLM( self->movedir );
+	glm::vec3 movedir = self->movedir;
 	G_SetMovedir( angles, movedir );
 	VectorCopy( &angles[0], self->s.angles );
 	VectorCopy( &movedir[0], self->movedir );
@@ -2791,7 +2791,7 @@ static void func_destructable_die( gentity_t *self, gentity_t*, gentity_t *attac
 	G_BotRemoveObstacle( self->num() );
 	trap_UnlinkEntity( self );
 
-	G_RadiusDamage( self->restingPosition, attacker, self->splashDamage, self->splashRadius, self,
+	G_RadiusDamage( &self->restingPosition[0], attacker, self->splashDamage, self->splashRadius, self,
 	                DAMAGE_KNOCKBACK, MOD_TRIGGER_HURT );
 }
 

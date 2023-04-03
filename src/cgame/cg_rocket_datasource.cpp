@@ -1480,7 +1480,11 @@ static void CG_Rocket_BuildArmouryBuyList( const char *table )
 		tblIndex = ROCKETDS_UPGRADES;
 	}
 
-	ASSERT( tblIndex != -1 );
+	if ( tblIndex == -1 )
+	{
+		Log::Warn( "unknown \"table\" name provided: \"%s\". Must either start with 'u' (for upgrades) or 'w' (for weapons).", table ? table : "[empty string]" );
+		return;
+	}
 
 	if ( tblIndex == ROCKETDS_WEAPONS )
 	{
@@ -1799,20 +1803,20 @@ struct dataSourceCmd_t
 	int  ( *get )( const char *table );
 };
 
-void dummyCleanUp( char const* )
+static void nullCleanFunc( char const* )
 {
 }
 
 static const dataSourceCmd_t dataSourceCmdList[] =
 {
-	{ "alienBuildList", &CG_Rocket_BuildAlienBuildList, &nullSortFunc, &dummyCleanUp, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
-	{ "alienEvolveList", &CG_Rocket_BuildAlienEvolveList, &nullSortFunc, &dummyCleanUp, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
+	{ "alienBuildList", &CG_Rocket_BuildAlienBuildList, &nullSortFunc, &nullCleanFunc, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
+	{ "alienEvolveList", &CG_Rocket_BuildAlienEvolveList, &nullSortFunc, &nullCleanFunc, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
 	{ "alienSpawnClass", &CG_Rocket_BuildAlienSpawnList, &nullSortFunc, &CG_Rocket_CleanUpAlienSpawnList, &CG_Rocket_SetAlienSpawnList, &nullFilterFunc, &CG_Rocket_ExecAlienSpawnList, &nullGetFunc },
 	{ "alOutputs", &CG_Rocket_BuildAlOutputs, &nullSortFunc, &CG_Rocket_CleanUpAlOutputs, &CG_Rocket_SetAlOutputsOutput, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
 	{ "armouryBuyList", &CG_Rocket_BuildArmouryBuyList, &nullSortFunc, &CG_Rocket_CleanUpArmouryBuyList, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
-	{ "beaconList", &CG_Rocket_BuildBeaconList, &nullSortFunc, &dummyCleanUp, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
+	{ "beaconList", &CG_Rocket_BuildBeaconList, &nullSortFunc, &nullCleanFunc, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
 	{ "demoList", &CG_Rocket_BuildDemoList, &nullSortFunc, &CG_Rocket_CleanUpDemoList, &CG_Rocket_SetDemoListDemo, &nullFilterFunc, &CG_Rocket_ExecDemoList, &nullGetFunc },
-	{ "humanBuildList", &CG_Rocket_BuildHumanBuildList, &nullSortFunc, &dummyCleanUp, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
+	{ "humanBuildList", &CG_Rocket_BuildHumanBuildList, &nullSortFunc, &nullCleanFunc, &nullSetFunc, &nullFilterFunc, &nullExecFunc, &nullGetFunc },
 	{ "humanSpawnItems", &CG_Rocket_BuildHumanSpawnItems, &nullSortFunc, CG_Rocket_CleanUpHumanSpawnItems, &CG_Rocket_SetHumanSpawnItems, &nullFilterFunc, &CG_Rocket_ExecHumanSpawnItems, &nullGetFunc },
 	{ "languages", &CG_Rocket_BuildLanguageList, &nullSortFunc, &CG_Rocket_CleanUpLanguageList, &CG_Rocket_SetLanguageListLanguage, &nullFilterFunc, &nullExecFunc, &CG_Rocket_GetLanguageListIndex },
 	{ "mapList", &CG_Rocket_BuildMapList, &nullSortFunc, &CG_Rocket_CleanUpMapList, &CG_Rocket_SetMapListIndex, &nullFilterFunc, &nullExecFunc, &nullGetFunc },

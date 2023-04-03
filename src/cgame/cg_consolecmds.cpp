@@ -439,11 +439,7 @@ static const struct cg_cmd_t
 
 	bool operator<( cg_cmd_t const& other ) const
 	{
-		if ( other.cmd )
-		{
-			return Q_stricmp( cmd, other.cmd ) < 0;
-		}
-		return true;
+		return Q_stricmp( cmd, other.cmd ) < 0;
 	}
 
 	bool operator<( char const* other ) const
@@ -628,7 +624,7 @@ void CompleteCommand( int argNum )
 	}
 
 	const cg_cmd_t *it = std::lower_bound( std::begin( commands ), std::end( commands ), CG_Argv( 0 ) );
-	if ( it != std::end( commands ) )
+	if ( it != std::end( commands ) && 0 == strcmp( CG_Argv( 0 ), it->cmd ) )
 	{
 		it->completer();
 	}

@@ -245,6 +245,11 @@ static bool SkipSurface( const NavgenConfig *config, const dshader_t *shader ) {
 		return true;
 	}
 
+	if ( !Q_stricmp( shader->shader, "textures/common/outside" ) )
+	{
+		return true;
+	}
+
 	return false;
 }
 
@@ -432,7 +437,7 @@ void NavmeshGenerator::LoadTris( std::vector<float> &verts, std::vector<int> &tr
 
 		/* Patches don't have any content but their shader may
 		have contentparm. */
-		if ( SkipContent( brushShader ) )
+		if ( SkipContent( shader ) )
 		{
 			continue;
 		}

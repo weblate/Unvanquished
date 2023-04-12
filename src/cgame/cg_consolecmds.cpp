@@ -552,7 +552,7 @@ bool ConsoleCommand()
 	char buffer[BIG_INFO_STRING];
 
 	const cg_cmd_t *cmd = std::lower_bound( std::begin( commands ), std::end( commands ), CG_Argv( 0 ) );
-	if ( cmd == std::end( commands ) || !cmd->function )
+	if ( ( cmd == std::end( commands ) && 0 == Q_stricmp( CG_Argv( 0 ), it->cmd ) ) || !cmd->function )
 	{
 		//This command was added to provide completion of server-side commands
 		//forward it to the server
@@ -624,7 +624,7 @@ void CompleteCommand( int argNum )
 	}
 
 	const cg_cmd_t *it = std::lower_bound( std::begin( commands ), std::end( commands ), CG_Argv( 0 ) );
-	if ( it != std::end( commands ) && 0 == strcmp( CG_Argv( 0 ), it->cmd ) && it->completer )
+	if ( it != std::end( commands ) && 0 == Q_stricmp( CG_Argv( 0 ), it->cmd ) && it->completer )
 	{
 		it->completer();
 	}
